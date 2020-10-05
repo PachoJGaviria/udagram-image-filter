@@ -1,6 +1,8 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
+import validator from 'validator'
 import { filterImageFromURL, deleteLocalFiles } from './util/util';
+import { fileURLToPath } from 'url';
 
 (async () => {
 
@@ -13,7 +15,6 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  // @TODO1 IMPLEMENT A RESTFUL ENDPOINT
   // GET /filteredimage?image_url={{URL}}
   // endpoint to filter an image from a public url.
   // IT SHOULD
@@ -26,14 +27,33 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
-
-  /**************************************************************************** */
-
-  //! END @TODO1
+  app.get("/filteredimage", async (req: Request, res: Response) => {
+    const { image_url } = req.query;
+    if (!image_url) {
+      return res.status(400)
+        .send({ message: 'The image_url query param is required.' })
+    }
+    if (!validator.isURL(image_url as string)) {
+      return res.status(400)
+        .send({ message: 'The image_url must be a valid URL.' })
+    }
+    let filterImagePath: string;
+    try {
+      filterImagePath = await filterImageFromURL(image_url as string);
+      return res.sendFile(filterImagePath);
+    } catch (err) {
+      return res.status(500)
+        .send({ message: 'Internal Server error', detail: err?.message })
+    } finally {
+      if (filterImagePath) {
+        res.on('finish', () => deleteLocalFiles([filterImagePath]));
+      }
+    }
+  });
 
   // Root Endpoint
   // Displays a simple message to the user
-  app.get("/", async (req, res) => {
+  app.get("/", async (req: Request, res: Response) => {
     res.send("try GET /filteredimage?image_url={{}}")
   });
 

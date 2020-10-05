@@ -1,13 +1,11 @@
 import fs from 'fs';
 import Jimp = require('jimp');
 
-// filterImageFromURL
-// helper function to download, filter, and save the filtered image locally
-// returns the absolute path to the local image
-// INPUTS
-//    inputURL: string - a publicly accessible url to an image file
-// RETURNS
-//    an absolute path to a filtered image locally saved file
+/**
+ * Helper function to download, filter, and save the filtered image locally returns the absolute path to the local image
+ * @param inputURL string: A publicly accessible url to an image file
+ * @returns Promise<string>: An absolute path to a filtered image locally saved file
+ */
 export async function filterImageFromURL(inputURL: string): Promise<string> {
   return new Promise(async resolve => {
     const photo = await Jimp.read(inputURL);
@@ -21,13 +19,23 @@ export async function filterImageFromURL(inputURL: string): Promise<string> {
   });
 }
 
-// deleteLocalFiles
-// helper function to delete files on the local disk
-// useful to cleanup after tasks
-// INPUTS
-//    files: Array<string> an array of absolute paths to files
-export async function deleteLocalFiles(files: Array<string>) {
-  for (let file of files) {
-    fs.unlinkSync(file);
-  }
+/**
+ * Helper function to delete files on the local disk useful to cleanup after tasks
+ * @param files Array<string>: An array of absolute paths to files
+ */
+export async function deleteLocalFiles(files: Array<string>): Promise<void[]> {
+    const promises = new Array<Promise<void>>();
+    let deleteAction;
+    for (let file of files) {
+      deleteAction = new Promise<void>((resolve, reject) => {
+        fs.unlink(file, (err) => {
+          if (err) {
+            reject(err)
+          }
+        });
+        resolve()
+      });
+      promises.push(deleteAction);
+    }
+    return Promise.all(promises);
 }
