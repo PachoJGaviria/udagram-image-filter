@@ -2,7 +2,6 @@ import express, { Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import validator from 'validator'
 import { filterImageFromURL, deleteLocalFiles } from './util/util';
-import { fileURLToPath } from 'url';
 
 (async () => {
 
@@ -15,15 +14,22 @@ import { fileURLToPath } from 'url';
   // Use the body parser middleware for post requests
   app.use(bodyParser.json());
 
-  // GET /filteredimage?image_url={{URL}}
-  // endpoint to filter an image from a public url.
-  // IT SHOULD
-  //    1
-  //    1. validate the image_url query
-  //    2. call filterImageFromURL(image_url) to filter the image
-  //    3. send the resulting file in the response
-  //    4. deletes any files on the server on finish of the response
-  // QUERY PARAMATERS
+  //CORS Should be restricted
+  const clientServer = process.env.CLIENT_SERVER;
+  app.use(function (req, res, next) {
+    if (clientServer) {
+      res.header("Access-Control-Allow-Origin", clientServer);
+    }
+    res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
+    next();
+  });
+
+  // GET /filteredimage?image_url={{URL}} - endpoint to filter an image from a public url.
+  //  1. validate the image_url query
+  //  2. call filterImageFromURL(image_url) to filter the image
+  //  3. send the resulting file in the response
+  //  4. deletes any files on the server on finish of the response
+  // QUERY PARAMETERS
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]

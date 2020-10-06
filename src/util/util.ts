@@ -24,18 +24,18 @@ export async function filterImageFromURL(inputURL: string): Promise<string> {
  * @param files Array<string>: An array of absolute paths to files
  */
 export async function deleteLocalFiles(files: Array<string>): Promise<void[]> {
-    const promises = new Array<Promise<void>>();
-    let deleteAction;
-    for (let file of files) {
-      deleteAction = new Promise<void>((resolve, reject) => {
-        fs.unlink(file, (err) => {
-          if (err) {
-            reject(err)
-          }
-        });
-        resolve()
+  const promises = new Array<Promise<void>>();
+  let deleteAction;
+  for (let file of files) {
+    deleteAction = new Promise<void>((resolve, reject) => {
+      fs.unlink(file, (err) => {
+        if (err) {
+          reject(err)
+        }
       });
-      promises.push(deleteAction);
-    }
-    return Promise.all(promises);
+      resolve()
+    });
+    promises.push(deleteAction);
+  }
+  return Promise.all(promises);
 }
