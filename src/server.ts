@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import bodyParser from 'body-parser';
 import validator from 'validator'
 import { filterImageFromURL, deleteLocalFiles } from './util/util';
@@ -24,6 +24,25 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
     next();
   });
 
+  // Valid the api-key
+  async function validApiKey(req: Request, res: Response, next: NextFunction) {
+    if (!req.headers || !req.headers.authorization) {
+      return res.status(401).send({ message: 'No authorization headers.' });
+    }
+
+    const token_bearer = req.headers.authorization.split(' ');
+    if (token_bearer.length != 2) {
+      return res.status(401).send({ message: 'Malformed token.' });
+    }
+
+    const token = token_bearer[1];
+    if (token !== process.env.MACHINE_TOKEN) {
+      return res.status(403).send({ message: 'Forbidden: incorrect api key' });
+    }
+    return next()
+  }
+
+
   // GET /filteredimage?image_url={{URL}} - endpoint to filter an image from a public url.
   //  1. validate the image_url query
   //  2. call filterImageFromURL(image_url) to filter the image
@@ -33,7 +52,7 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   //    image_url: URL of a publicly accessible image
   // RETURNS
   //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
-  app.get("/filteredimage", async (req: Request, res: Response) => {
+  app.get("/filteredimage", validApiKey, async (req: Request, res: Response) => {
     const { image_url } = req.query;
     if (!image_url) {
       return res.status(400)
