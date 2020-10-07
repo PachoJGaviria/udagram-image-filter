@@ -52,7 +52,7 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
   // QUERY PARAMETERS
   //    image_url: URL of a publicly accessible image
   // RETURNS
-  //   the filtered image file [!!TIP res.sendFile(filteredpath); might be useful]
+  //   the filtered image file
   app.get("/filteredimage", validApiKey, async (req: Request, res: Response) => {
     const { image_url } = req.query;
     if (!image_url) {
