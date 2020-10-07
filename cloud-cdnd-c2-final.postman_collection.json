@@ -35,7 +35,7 @@
 		"apikey": [
 			{
 				"key": "value",
-				"value": "Bearer apiKeyValue",
+				"value": "Bearer YourApiKeyValue",
 				"type": "string"
 			},
 			{

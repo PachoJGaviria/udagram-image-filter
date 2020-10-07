@@ -36,7 +36,8 @@ import { filterImageFromURL, deleteLocalFiles } from './util/util';
     }
 
     const token = token_bearer[1];
-    if (token !== process.env.MACHINE_TOKEN) {
+    const apiKey = process.env.MACHINE_TOKEN || 'YourApiKeyValue'
+    if (token !== apiKey) {
       return res.status(403).send({ message: 'Forbidden: incorrect api key' });
     }
     return next()
