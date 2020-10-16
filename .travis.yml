@@ -1,0 +1,25 @@
+language: node_js
+node_js:
+  - 12
+
+# Docker integration
+services:
+  - docker
+
+# Pre-testing installs
+install:
+  - npm ci
+
+# Scripts to be run such as tests
+before_script:
+  - npm run build-ci --if-present
+  - echo "no tests"
+
+script:
+  - docker --version # print the version for logging
+  - docker build . -t udagram-image-filter
+  - docker tag udagram-image-filter fgaviria/udagram-image-filter:latest
+
+after_success:
+  - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+  - docker push fgaviria/udagram-image-filter
